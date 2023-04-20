@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "FJenkins",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}
