@@ -27,8 +27,6 @@ The Fastfile has to be inside your ./fastlane directory.
 The Fastfile is used to configure fastlane. Open it in your favourite text editor, using Ruby syntax highlighting.
 
 
-*** Specify the plaftform which targets to ex: ios/macos/tvos/watchos ***
-
 *** Create/register app for both debug and release ***
 
 *** Command for development: <fastlane create_ios_app --env debug> ***
