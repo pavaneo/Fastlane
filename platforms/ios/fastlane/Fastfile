@@ -1,0 +1,97 @@
+desc "
+The Fastfile stores the automation configuration that can be run with fastlane.
+The Fastfile has to be inside your ./fastlane directory.
+The Fastfile is used to configure fastlane. Open it in your favourite text editor, using Ruby syntax highlighting.
+"
+
+desc "*** Specify the plaftform which targets to ex: ios/macos/tvos/watchos ***"
+default_platform(:ios)
+
+platform :ios do
+
+  desc "*** Create/register app for both debug and release ***"
+  desc "*** Command for development: <fastlane create_ios_app --env debug> ***"
+  desc "*** Command for release: <fastlane create_ios_app --env release> ***"
+  lane :create_ios_app do 
+  produce(
+      enable_services: {
+         push_notification: "on",
+      }
+    )
+  end 
+
+  desc "*** Create development certificate and provisioningProfiles ***"
+  desc "*** Command: <fastlane signing_ios_app_debug --env debug> ***"
+  lane :signing_ios_app_debug do
+    cert()
+    sigh(app_identifier: "io.ionic.tyfone.debug")
+  end
+
+  desc "*** Create release certificate and provisioningProfiles ***"
+  desc "*** Command: <fastlane signing_ios_app_release --env release> ***"
+  lane :signing_ios_app_release do
+    cert()
+    sigh(app_identifier: "io.ionic.tyfone.release")
+  end
+
+  desc "*** Generate push notifications related profiles ***"
+  desc "*** Command for debug: <fastlane generate_push_notification_profile --env debug>  ***"
+  desc "*** Command for release: <fastlane generate_push_notification_profile --env release>  ***"
+  lane :generate_push_notification_profile do
+    get_push_certificate()
+  end
+
+  desc "*** Get certificates for both develop and release ***"
+  desc "*** Command for debug: <fastlane get_profile_certs --env debug> ***"
+  desc "*** Command for release: <fastlane get_profile_certs --env release> ***"
+  lane :get_profile_certs do
+    get_certificates()
+    get_provisioning_profile()
+  end
+
+  desc "*** Update matching profiles and certificate in the project ***"
+  desc "*** Command for debug: <fastlane match_ios_app_debug --env debug> ***"
+  lane :match_ios_app_debug do |options|
+    signing_ios_app_debug
+    mapping = Actions.lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING]
+    xcodeproj_path = File.expand_path("../MyApp.xcodeproj", Dir.pwd)
+    update_code_signing_settings(
+      path: xcodeproj_path,
+      profile_name: ENV['MATCH_APP_IDENTIFIER'],
+    ) 
+  end
+
+
+  desc "*** Update matching profiles and certificate in the project ***"
+  desc "*** Command for release: <fastlane match_ios_app_release --env release> ***"
+  lane :match_ios_app_release do |options|
+    signing_ios_app_release
+    mapping = Actions.lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING]
+    xcodeproj_path = File.expand_path("../MyApp.xcodeproj", Dir.pwd)
+    update_code_signing_settings(
+      path: xcodeproj_path,
+      profile_name: ENV['MATCH_APP_IDENTIFIER'],
+    ) 
+  end
+
+
+  desc "*** Create Archive and .ipa file for debug ***"
+  desc "*** Command: <fastlane building_ios_app_debug --env debug> ***"
+  lane :building_ios_app_debug do
+     gym(
+      export_options: { 
+        provisioningProfiles:  {  
+          "io.ionic.tyfone.debug" => "io.ionic.tyfone.debug Development"}})
+  end
+
+
+  desc "*** Create Archive and .ipa file for release ***"
+  desc "*** Command: <fastlane building_ios_app_release --env release> ***"
+  lane :building_ios_app_release do
+     gym(
+      export_options: { 
+        provisioningProfiles:  {  
+          "io.ionic.tyfone.release" => "Fastlane_ios_ionic_release_profile Development"}})
+  end
+
+end
